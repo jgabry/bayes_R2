@@ -100,7 +100,7 @@ coefficients and standard errors.
 
 \section{Defining $R^2$ based on the variance of estimated prediction errors}
 
-Our first thought for Bayesian $R^2$ is to simply use the the posterior mean
+Our first thought for Bayesian $R^2$ is to simply use the posterior mean
 estimate of $\theta$ to create Bayesian predictions $\hat{y}_i$ and then plug
 these into the classical formula \eqref{rsq1}.  This has two problems:  first,
 it is dismisses uncertainty to use a point estimate in Bayesian computation;
@@ -112,7 +112,7 @@ no requirement that this be the case, and it would be awkward to say that a
 fitted model explains more than 100\% of the variance.
 
 \begin{figure}
-\centerline{\includegraphics[width=.5\textwidth]{fig/fig_1a.pdf}\includegraphics[width=.5\textwidth]{fig/fig_1b.pdf}}
+\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b.pdf}}
 \vspace{-.1in}
 \caption{\em Simple example showing the challenge of defining $R^2$ for a fitted
 Bayesian model.  {\em Left plot:}  data, least-squares regression line, and
@@ -121,7 +121,7 @@ fit.  The standard deviation of the fitted values from the Bayes model (the blue
 dots on the line) is greater than the standard deviation of the data, so the
 usual definition of $R^2$ will not work.  {\em Right plot:}  posterior mean
 fitted regression line along with 20 draws of the line from the posterior
-distribution.  To define a Bayesian $R^2$ we shall compute equation 
+distribution.  To define a Bayesian $R^2$ we compute equation 
 \eqref{rsq3} for each posterior simulation draw and then take the median.}
 \label{rsquared1}
 \end{figure}
@@ -138,6 +138,8 @@ ratio---$R^2$ as defined in \eqref{rsq1}---is greater than 1.
 Figure~\ref{rsquared1}b shows the posterior mean fitted regression line along
 with 20 draws of the line $y = \alpha + \beta x$ from the fitted posterior
 distribution of $(\alpha,\beta)$.
+%\footnote{Code for producing the figures is available at \url{https://github.com/jgabry/bayes_R2}.}
+
 
 Instead of working with \eqref{rsq1} directly, we generalize a different formula
 for explained variance:
@@ -187,8 +189,7 @@ bayes_R2 <- function(fit) {
   var_ypred <- apply(ypred, 1, var)
   var_e <- apply(e, 1, var)
   var_ypred / (var_ypred + var_e)
- }
-
+}
 ## Example
 M1 <- stan_glm(y ~ x1 + x2)
 print(median(bayes_R2(M1)))
@@ -227,8 +228,8 @@ track the decline in the estimated error variance, $V_{i=1}^n e_i^s$.
 
 Moving forward, we plan to implement our Bayesian $R^2$ by default in
 {\tt rstanarm}, not just for linear regression but also for generalized linear
-models (see the appendix for a generalized version of the
-\verb#bayes_R2# function). The concept of ``explained variance'' makes most
+models; see the appendix for a generalized version of the
+\verb#bayes_R2# function. The concept of ``explained variance'' makes most
 sense for linear models with equal variance, but given that we can essentially
 compute $R^2$ for free, we might as well do so.  An alternative is to summarize
 residual error on the log-probability scale, in which case we recommend using
@@ -257,11 +258,11 @@ quantifying the model's fit to the data at hand.
 
 \bibitem Choodari-Oskoo, B., Royston, P., and Parmar, M. K. B. (2010).  A simulation study of predictive ability measures in a survival model I: Explained variation measures.  {\em Statistics in Medicine} {\bf 31}, 2627--2643.
 
+\bibitem Gabry, J., and Goodrich, B. (2017).  rstanarm:  Bayesian applied regression modeling via Stan.  \url{https://cran.r-project.org/web/packages/rstanarm/index.html}
+
 \bibitem Gelman, A., Hwang, J., and Vehtari, A. (2014).  Understanding predictive information criteria for Bayesian models. {\em Statistics and Computing} {\bf 24}, 997--1016.
 
 \bibitem Gelman, A., and Pardoe, I. (2006).  Bayesian measures of explained variance and pooling in multilevel (hierarchical) models. {\em Technometrics} {\bf 48}, 241--251.
-
-\bibitem Gabry, J., and Goodrich, B. (2017).  rstanarm:  Bayesian applied regression modeling via Stan.  \url{https://cran.r-project.org/web/packages/rstanarm/index.html}
 
 \bibitem Helland, I. S. (1987).  On the interpretation and use of $R^2$ in regression analysis.  {\em Biometrics} {\bf 43}, 61--69.
 
@@ -277,6 +278,7 @@ quantifying the model's fit to the data at hand.
 
 \bibitem Xu, R. (2003).  Measuring explained variation in linear mixed-effects models.  {\em Statistics in Medicine} {\bf 22}, 3527--3541.
 
+\pagebreak
 
 \section*{Appendix}
 
@@ -286,9 +288,9 @@ Bayesian linear and generalized linear models fit using the
 differences compared to the function presented in the body of the paper are 
 the requirement of specifying \verb#transform=TRUE# in the call to 
 \verb#posterior_linpred# (to apply the inverse-link function to the linear 
-predictor) and a few lines to account for the fact that some binomial models
+predictor) and a few lines to account for the binomial models that
 have a number of trials greater than 1.
-
+%
 \vspace{-\baselineskip}
 \begin{quotation}
 \noindent

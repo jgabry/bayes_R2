@@ -31,8 +31,8 @@ y <- c(1.7, 2.6, 2.5, 4.4, 3.8) - 3
 xy <- data.frame(x,y)
 
 ## Lsq fit
-fit_lm <- lm(y ~ x, data = xy)
-ols_coef <- coef(fit_lm)
+fit <- lm(y ~ x, data = xy)
+ols_coef <- coef(fit)
 
 yhat <- ols_coef[1] + ols_coef[2] * x
 r <- y - yhat
@@ -42,19 +42,21 @@ rsq_2 <- var(yhat)/(var(yhat) + var(r))
 print(c(rsq_1, rsq_2))
 
 ## Bayes fit
-fit_stan <- stan_glm(
+fit_bayes <- stan_glm(
   y ~ x,
   data = xy,
   prior_intercept = normal(0, 0.2, autoscale = FALSE),
   prior = normal(1, 0.2, autoscale = FALSE)
 )
-posterior <- as.matrix(fit_stan, pars = c("(Intercept)", "x"))
+posterior <- as.matrix(fit_bayes, pars = c("(Intercept)", "x"))
 post_means <- colMeans(posterior)
 
-print(median(bayes_R2(fit_stan)))
+print(median(bayes_R2(fit_bayes)))
 
 
 # Figures -----------------------------------------------------------------
+
+# ggplot version
 theme_set(bayesplot::theme_default(base_family = "sans"))
 
 fig_1a <-
@@ -128,4 +130,61 @@ fig_1b <-
 
 plot(fig_1b)
 ggsave("fig/fig_1b.pdf", width = 4.5, height = 4.5)
+
+
+
+# base graphics version
+
+pdf("fig/rsquared1a.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  main = "Least squares and Bayes fits",
+  bty = "l",
+  pch = 20
+)
+abline(coef(fit)[1], coef(fit)[2], col = "black")
+text(-1.6,-.7, "Least-squares\nfit", cex = .9)
+abline(0, 1, col = "blue", lty = 2)
+text(-1, -1.8, "(Prior regression line)", col = "blue", cex = .9)
+abline(coef(fit_bayes)[1], coef(fit_bayes)[2], col = "blue")
+text(1.4, 1.2, "Posterior mean fit", col = "blue", cex = .9)
+points(
+  x,
+  coef(fit_bayes)[1] + coef(fit_bayes)[2] * x,
+  pch = 20,
+  col = "blue"
+)
+dev.off()
+
+## I used color-hex.com
+
+pdf("fig/rsquared1b.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  bty = "l",
+  pch = 20,
+  main = "Bayes posterior simulations"
+)
+sims <- as.matrix(fit_bayes)
+n_sims <- nrow(sims)
+for (s in sample(n_sims, 20)) {
+  abline(sims[s, 1], sims[s, 2], col = "#9497eb")
+}
+abline(
+  coef(fit_bayes)[1],
+  coef(fit_bayes)[2],
+  col = "#1c35c4",
+  lwd = 2
+)
+points(x, y, pch = 20, col = "black")
+dev.off()
+
 
