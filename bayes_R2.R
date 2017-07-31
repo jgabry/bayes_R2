@@ -58,8 +58,17 @@ print(median(bayes_R2(fit_bayes)))
 
 # Figures -----------------------------------------------------------------
 
+# take a sample of 20 posterior draws
+keep <- sample(nrow(posterior), 20)
+samp_20_draws <- posterior[keep, ]
+
+
 # ggplot version
 theme_set(bayesplot::theme_default(base_family = "sans"))
+theme_update(
+  plot.title = element_text(face = "bold", hjust = 0.5), 
+  axis.text = element_text(size = rel(1.1))
+)
 
 fig_1a <-
   ggplot(xy, aes(x, y)) +
@@ -67,71 +76,64 @@ fig_1a <-
   geom_abline( # ols regression line
     intercept = ols_coef[1],
     slope = ols_coef[2],
-    size = 0.5
+    size = 0.4
   ) +
   geom_abline( # prior regression line
     intercept = 0,
     slope = 1,
     color = "blue",
     linetype = 2,
-    size = 0.5
+    size = 0.3
   ) +
   geom_abline( # posterior mean regression line
     intercept = post_means[1],
     slope = post_means[2],
-    color = "blue3",
-    size = 0.5
+    color = "blue",
+    size = 0.4
   ) +
   geom_point(
     aes(y = post_means[1] + post_means[2] * x),
     color = "blue"
   ) +
-  coord_fixed(xlim = c(-2.25, 2.25), ylim = c(-2.25, 2.25)) +
   annotate(
     geom = "text",
-    x = c(-1.7, -.85, 1.1),
-    y = c(-0.63, -1.85, 1),
+    x = c(-1.6, -1, 1.4),
+    y = c(-0.7, -1.8, 1.2),
     label = c(
       "Least-squares\nfit",
-      "Prior regression line",
+      "(Prior regression line)",
       "Posterior mean fit"
     ),
-    color = c("black", "blue", "blue3"),
+    color = c("black", "blue", "blue"),
     size = 3.8
   ) +
-  ggtitle("Least squares and Bayes fits") +
-  theme(plot.title = element_text(face = "bold"))
+  ylim(range(x)) + 
+  ggtitle("Least squares and Bayes fits")
 
 plot(fig_1a)
-ggsave("fig/fig_1a.pdf", width = 4.5, height = 4.5)
+ggsave("fig/rsquared1a-gg.pdf", width = 5, height = 4)
 
-
-# take 20 posterior draws
-keep <- sample(nrow(posterior), 20)
-samp <- posterior[keep, ]
 
 fig_1b <-
   ggplot(xy, aes(x, y)) +
-  geom_point() +
   geom_abline( # 20 posterior draws of the regression line
-    intercept = samp[, 1],
-    slope = samp[, 2],
-    color = "blue",
-    size = 0.25,
-    alpha = 1/3
+    intercept = samp_20_draws[, 1],
+    slope = samp_20_draws[, 2],
+    color = "#9497eb",
+    size = 0.25
   ) +
   geom_abline( # posterior mean regression line
     intercept = post_means[1],
     slope = post_means[2],
-    color = "blue3",
+    color = "#1c35c4",
     size = 1
   ) +
-  coord_fixed(xlim = c(-2.25, 2.25), ylim = c(-2.25, 2.25)) +
-  ggtitle("Bayes posterior simulations") +
-  theme(plot.title = element_text(face = "bold"))
+  geom_point() +
+  ylim(range(x)) + 
+  ggtitle("Bayes posterior simulations")
 
 plot(fig_1b)
-ggsave("fig/fig_1b.pdf", width = 4.5, height = 4.5)
+ggsave("fig/rsquared1b-gg.pdf", width = 5, height = 4)
 
 
 
@@ -175,10 +177,8 @@ plot(
   pch = 20,
   main = "Bayes posterior simulations"
 )
-sims <- as.matrix(fit_bayes)
-n_sims <- nrow(sims)
-for (s in sample(n_sims, 20)) {
-  abline(sims[s, 1], sims[s, 2], col = "#9497eb")
+for (s in 1:nrow(samp_20_draws)) {
+  abline(samp_20_draws[s, 1], samp_20_draws[s, 2], col = "#9497eb")
 }
 abline(
   coef(fit_bayes)[1],
