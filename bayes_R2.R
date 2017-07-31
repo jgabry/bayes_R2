@@ -2,8 +2,10 @@ library(rstanarm)
 library(ggplot2)
 library(bayesplot)
 
-# Compute Bayesian R-squared for linear and
-# generalized linear models.
+# Compute Bayesian R-squared for stan_glm models. 
+# 
+# A more complicated version of this function that is compatible with stan_glmer
+# models and specifying newdata will be available in the rstanarm package.
 #
 # @param fit A fitted model object returned by stan_glm.
 # @return A vector of R-squared values with length equal to

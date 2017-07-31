@@ -95,8 +95,8 @@ regression models using traditional R syntax
 and then fit these models using Bayesian inference, allowing the incorporation
 of prior information in the input stage and yielding posterior simulations and
 predictions in the output.  After fitting a model using the \verb#stan_glm()#
-function, we would like to display an estimate of $R^2$ along with the estimated
-coefficients and standard errors.
+or \verb#stan_glmer()# function, we would like to display an estimate of $R^2$ 
+along with the estimated coefficients and standard errors.
 
 \section{Defining $R^2$ based on the variance of estimated prediction errors}
 
@@ -137,9 +137,7 @@ standard deviation of the data is only 1.08, so the square of this
 ratio---$R^2$ as defined in \eqref{rsq1}---is greater than 1.
 Figure~\ref{rsquared1}b shows the posterior mean fitted regression line along
 with 20 draws of the line $y = \alpha + \beta x$ from the fitted posterior
-distribution of $(\alpha,\beta)$.
-%\footnote{Code for producing the figures is available at \url{https://github.com/jgabry/bayes_R2}.}
-
+distribution of $(\alpha,\beta)$.\footnote{Code for this example is available at \url{https://github.com/jgabry/bayes_R2}.}
 
 Instead of working with \eqref{rsq1} directly, we generalize a different formula
 for explained variance:
@@ -191,7 +189,7 @@ bayes_R2 <- function(fit) {
   var_ypred / (var_ypred + var_e)
 }
 ## Example
-M1 <- stan_glm(y ~ x1 + x2)
+M1 <- stan_glm(y ~ x)
 print(median(bayes_R2(M1)))
 \end{verbatim}
 \end{small}
@@ -203,6 +201,18 @@ if we were to replace the denominator of \eqref{rsq3} by $V_{i=1}^n y_i$, we
 would get a median $R^2$ of 1.44.  Also, in case it might be of interest, we
 report the posterior mean and standard deviation of $R^2$ in this example:
 they are 0.79 and 0.03.
+
+\section{Models with group-specific terms}
+The {\tt rstanarm} package also provides the \verb#stan_glmer# function for 
+fitting models with group-specific coefficients that have unknown covariance matrices.
+The linear predictor for these models is often written as $X \beta + Zb$, following
+the parameterization used by the \verb#glmer# function in the {\tt lme4} package.
+In the classical formulation $Zb$ can be considered as part of the model's error term
+rather than the conditional mean of the outcome, but from a Bayesian perspective we 
+condition on $Z$ when fitting the model and it makes sense by default to include the $Zb$ 
+term when computing $\hat{y}$. However, the \verb#bayes_R2# function in {\tt rstanarm} 
+provides a {\tt re.form} argument that allows the user to override this default and specify which, 
+if any, of the group-level terms should factor into the computation of $\hat{y}$ and thus $R^2$.
 
 \section{Discussion}
 $R^2$ has well-known problems as a measure of model fit, but it can be a handy
@@ -244,11 +254,13 @@ be less of an issue with Bayesian inference because averaging over the posterior
 distribution is more conservative than taking a least-squares or maximum
 likelihood fit, but predictive accuracy for new data will still on average be
 lower, in expectation, than for the data used to fit the model (Gelman, Hwang,
-and Vehtari, 2014).  To correct for that bias one might want to replace
+and Vehtari, 2014).   We will include a {\tt newdata} argument in the \verb#bayes_R2# 
+function  that can be used in the case that new or held-out data are actually 
+available, but otherwise to correct for that bias one might want to replace
 $V_{i=1}^n e_i^s$ in the denominator of \eqref{rsq3} by its expectation for new
 data, or more generally one could construct an overfitting-corrected $R^2$ in
-the same way that is done for log-score measures via cross-validation.  In the
-present paper we are trying to stay close to the sprit of the original $R^2$ in
+the same way that is done for log-score measures via cross-validation. 
+In the present paper we are trying to stay close to the sprit of the original $R^2$ in
 quantifying the model's fit to the data at hand.
 
 
@@ -289,7 +301,7 @@ differences compared to the function presented in the body of the paper are
 the requirement of specifying \verb#transform=TRUE# in the call to 
 \verb#posterior_linpred# (to apply the inverse-link function to the linear 
 predictor) and a few lines to account for the binomial models that
-have a number of trials greater than 1.
+have a number of trials greater than 1. 
 %
 \vspace{-\baselineskip}
 \begin{quotation}
@@ -319,5 +331,9 @@ bayes_R2 <- function(fit) {
 \end{verbatim}
 \end{small}
 \end{quotation}
+
+\noindent The code for the \verb#bayes_R2# function included in {\tt rstanarm} will be 
+more complicated than the function presented here in order to accommodate models fit 
+using \verb#stan_glmer# and various special cases.
 
 \end{document}
