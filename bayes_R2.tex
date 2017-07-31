@@ -205,13 +205,14 @@ they are 0.79 and 0.03.
 \section{Models with group-specific terms}
 The {\tt rstanarm} package also provides the \verb#stan_glmer# function for 
 fitting models with group-specific coefficients that have unknown covariance matrices.
-The linear predictor for these models is often written as $X \beta + Zb$. 
+The linear predictor for these models is often written as $X \beta + Zb$, following
+the parameterization used by the \verb#glmer# function in the {\tt lme4} package.
 In the classical formulation $Zb$ can be considered as part of the model's error term
 rather than the conditional mean of the outcome, but from a Bayesian perspective we 
 condition on $Z$ when fitting the model and it makes sense by default to include the $Zb$ 
-term when computing $\hat{y}$. However, the \verb#bayes_R2# function in {\tt rstanarm} will 
-provide an {\tt re.form} argument that allows the user to override this default and specify which, 
-if any, of the group-level terms should factor into the computation of $\hat{y}$ and thus $R^2$. 
+term when computing $\hat{y}$. However, the \verb#bayes_R2# function in {\tt rstanarm} 
+provides a {\tt re.form} argument that allows the user to override this default and specify which, 
+if any, of the group-level terms should factor into the computation of $\hat{y}$ and thus $R^2$.
 
 \section{Discussion}
 $R^2$ has well-known problems as a measure of model fit, but it can be a handy
