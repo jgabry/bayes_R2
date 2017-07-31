@@ -6,6 +6,8 @@
 \usepackage{breakurl}
 \usepackage{comment}
 
+\usepackage{natbib}
+
 % \usepackage[
 % scale=.875,
 % stdmathitalics=true,
@@ -29,7 +31,7 @@
 \subsubsectionfont{\sffamily\mdseries\upshape\normalsize}
 \makeatletter
 \renewcommand\@seccntformat[1]{\csname the#1\endcsname.\quad}
-\makeatother\renewcommand{\bibitem}{\vskip 2pt\par\hangindent\parindent\hskip-\parindent}
+%\makeatother\renewcommand{\bibitem}{\vskip 2pt\par\hangindent\parindent\hskip-\parindent}
 
 \makeatletter
 \def\@maketitle{%
@@ -84,12 +86,12 @@ The proportion of variance explained,
 %
 is a commonly used measure of model fit, and there is a long literature on
 interpreting it, adjusting it for degrees of freedom used in fitting the model,
-and generalizing it to other settings such as hierarchical models; see Xu (2003)
-and Gelman and Pardoe (2006).
+and generalizing it to other settings such as hierarchical models; see \cite{Xu2003}
+and \cite{GelmanPardoe2006}.
 
 Here we consider how to extend the concept of $R^2$ to apply to Bayesian model
-fitting.  Our motivation is the package {\tt rstanarm} (Gabry and Goodrich,
-2017), which contains a set of wrapper functions that allows the user to express
+fitting.  Our motivation is the package {\tt rstanarm} \citep{rstanarmRpackage}, 
+which contains a set of wrapper functions that allows the user to express
 regression models using traditional R syntax
 (for example, $\mathtt{y \sim x1 + x2 + x3}$)
 and then fit these models using Bayesian inference, allowing the incorporation
@@ -112,7 +114,7 @@ no requirement that this be the case, and it would be awkward to say that a
 fitted model explains more than 100\% of the variance.
 
 \begin{figure}
-\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b.pdf}}
+\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b-gg.pdf}}
 \vspace{-.1in}
 \caption{\em Simple example showing the challenge of defining $R^2$ for a fitted
 Bayesian model.  {\em Left plot:}  data, least-squares regression line, and
@@ -152,8 +154,8 @@ construction, no matter what procedure is used to construct the estimate
 $\hat{y}$.
 
 Versions of expression \eqref{rsq2} have appeared in the survival analysis
-literature (Kent and O'Quigley, 1988, Choodari-Oskoo, Royston, and Parmar,
-2010), where it makes sense to use expected rather than observed data variance
+literature (\cite{KentOquigley1988, ChoodariRoystonParmar2010}), 
+where it makes sense to use expected rather than observed data variance
 in the denominator.  Our motivation is slightly different but the same
 mathematical principles apply.
 
@@ -173,7 +175,7 @@ although it is not clear that this would be of much interest.
 
 For a linear regression model we can compute the Bayesian $R^2$ defined in
 \eqref{rsq3} using the \verb#posterior_linpred# function in the {\tt rstanarm}
-package (Gabry and Goodrich, 2017) and a few additional lines of code:
+package \citep{rstanarmRpackage} and a few additional lines of code:
 %
 \vspace{-\baselineskip}
 \begin{quotation}
@@ -217,7 +219,7 @@ if any, of the group-level terms should factor into the computation of $\hat{y}$
 \section{Discussion}
 $R^2$ has well-known problems as a measure of model fit, but it can be a handy
 quick summary for linear regressions and generalized linear models (see, for
-example, Hu, Palta, and Shao, 2006) and we would like to produce it by default
+example, \cite{HuPaltaShao2006}) and we would like to produce it by default
 when fitting Bayesian regressions.  Our preferred solution is to use the
 posterior median of the ratio \eqref{rsq3}:  predicted variance divided by
 predicted variance plus error variance.
@@ -230,8 +232,8 @@ perspective, a concept such as ``explained variance'' can ultimately only be
 interpreted in the context of a model.  The denominator of \eqref{rsq3} can be
 interpreted as an estimate of the expected variance of predicted future data
 from the model under the assumption that the predictors $X$ are held fixed;
-alternatively the predictors can be taken as random, as suggested by Helland
-(1987) and Tjur (2009).  In either case, we can consider our Bayesian $R^2$ as a
+alternatively the predictors can be taken as random, as suggested by \cite{Helland1987} 
+and \cite{Tjur2009}.  In either case, we can consider our Bayesian $R^2$ as a
 data-based estimate of the proportion of variance explained for new data. If the
 goal is to see continual progress of the fit to existing data, one can simply
 track the decline in the estimated error variance, $V_{i=1}^n e_i^s$.
@@ -243,18 +245,18 @@ models; see the appendix for a generalized version of the
 sense for linear models with equal variance, but given that we can essentially
 compute $R^2$ for free, we might as well do so.  An alternative is to summarize
 residual error on the log-probability scale, in which case we recommend using
-approximate leave-one-out cross-validation (Vehtari, Gelman, and Gabry, 2017),
+approximate leave-one-out cross-validation \citep{VehtariGelmanGabry2017},
 which can be done using the {\tt loo()} function within {\tt rstanarm}.   If
 desired, changes in expected log-probability scores can be converted back to an
-$R^2$ scale as discussed by Nagelkerke (1991).
+$R^2$ scale as discussed by \cite{Nagelkerke1991}.
 
 One issue that arises when using $R^2$ to evaluate and compare models is
 overfitting.  As with other measures of predictive model fit, overfitting should
 be less of an issue with Bayesian inference because averaging over the posterior
 distribution is more conservative than taking a least-squares or maximum
 likelihood fit, but predictive accuracy for new data will still on average be
-lower, in expectation, than for the data used to fit the model (Gelman, Hwang,
-and Vehtari, 2014).   We will include a {\tt newdata} argument in the \verb#bayes_R2# 
+lower, in expectation, than for the data used to fit the model \citep{GelmanHwangVehtari2014}.  
+We will include a {\tt newdata} argument in the \verb#bayes_R2# 
 function  that can be used in the case that new or held-out data are actually 
 available, but otherwise to correct for that bias one might want to replace
 $V_{i=1}^n e_i^s$ in the denominator of \eqref{rsq3} by its expectation for new
@@ -264,34 +266,12 @@ In the present paper we are trying to stay close to the sprit of the original $R
 quantifying the model's fit to the data at hand.
 
 
-\section*{References}
+%: references (see separate bayes_R2.bib file)
+\bibliography{bayes_R2}
+\bibliographystyle{chicago}
 
-\noindent
 
-\bibitem Choodari-Oskoo, B., Royston, P., and Parmar, M. K. B. (2010).  A simulation study of predictive ability measures in a survival model I: Explained variation measures.  {\em Statistics in Medicine} {\bf 31}, 2627--2643.
-
-\bibitem Gabry, J., and Goodrich, B. (2017).  rstanarm:  Bayesian applied regression modeling via Stan.  \url{https://cran.r-project.org/web/packages/rstanarm/index.html}
-
-\bibitem Gelman, A., Hwang, J., and Vehtari, A. (2014).  Understanding predictive information criteria for Bayesian models. {\em Statistics and Computing} {\bf 24}, 997--1016.
-
-\bibitem Gelman, A., and Pardoe, I. (2006).  Bayesian measures of explained variance and pooling in multilevel (hierarchical) models. {\em Technometrics} {\bf 48}, 241--251.
-
-\bibitem Helland, I. S. (1987).  On the interpretation and use of $R^2$ in regression analysis.  {\em Biometrics} {\bf 43}, 61--69.
-
-\bibitem Hu, B., Palta, M., and Shao, J. (2006).  Properties of $R^2$ statistics for logistic regression.  {\em Statistics in Medicine} {\bf 25}, 1383--1395.
-
-\bibitem Kent, J. T., and O'Quigley, J. (1988). Measures of dependence for censored survival data. {\em Biometrika} {\bf 75}, 525--534.
-
-\bibitem Nagelkerke, N. J. D. (1991).  A note on a general definition of the coefficient of determination. {\em Biometrika} {\bf 78}, 691--692.
-
-\bibitem Tjur, T. (2009).  Coefficient of determination in logistic regression models---A new proposal:  The coefficient of discrimination.  {\em American Statistician} {\bf 63}, 366--372.
-
-\bibitem Vehtari, A., Gelman, A, and Gabry, J. (2017).  Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC. {\em Statistics and Computing} {\bf 27}, 1413--1432.
-
-\bibitem Xu, R. (2003).  Measuring explained variation in linear mixed-effects models.  {\em Statistics in Medicine} {\bf 22}, 3527--3541.
-
-\pagebreak
-
+\clearpage
 \section*{Appendix}
 
 This modified version of the \verb#bayes_R2# function works with
