@@ -58,9 +58,64 @@ print(median(bayes_R2(fit_bayes)))
 
 # Figures -----------------------------------------------------------------
 
+# The first section of code below creates plots using base R graphics. 
+# Below that there is code to produce the plots using ggplot2.
+
 # take a sample of 20 posterior draws
 keep <- sample(nrow(posterior), 20)
 samp_20_draws <- posterior[keep, ]
+
+# base graphics version
+
+pdf("fig/rsquared1a.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  main = "Least squares and Bayes fits",
+  bty = "l",
+  pch = 20
+)
+abline(coef(fit)[1], coef(fit)[2], col = "black")
+text(-1.6,-.7, "Least-squares\nfit", cex = .9)
+abline(0, 1, col = "blue", lty = 2)
+text(-1, -1.8, "(Prior regression line)", col = "blue", cex = .9)
+abline(coef(fit_bayes)[1], coef(fit_bayes)[2], col = "blue")
+text(1.4, 1.2, "Posterior mean fit", col = "blue", cex = .9)
+points(
+  x,
+  coef(fit_bayes)[1] + coef(fit_bayes)[2] * x,
+  pch = 20,
+  col = "blue"
+)
+dev.off()
+
+## I used color-hex.com
+
+pdf("fig/rsquared1b.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  bty = "l",
+  pch = 20,
+  main = "Bayes posterior simulations"
+)
+for (s in 1:nrow(samp_20_draws)) {
+  abline(samp_20_draws[s, 1], samp_20_draws[s, 2], col = "#9497eb")
+}
+abline(
+  coef(fit_bayes)[1],
+  coef(fit_bayes)[2],
+  col = "#1c35c4",
+  lwd = 2
+)
+points(x, y, pch = 20, col = "black")
+dev.off()
 
 
 # ggplot version
@@ -134,59 +189,4 @@ fig_1b <-
 
 plot(fig_1b)
 ggsave("fig/rsquared1b-gg.pdf", width = 5, height = 4)
-
-
-
-# base graphics version
-
-pdf("fig/rsquared1a.pdf", height=4, width=5)
-par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
-plot(
-  x, y,
-  ylim = range(x),
-  xlab = "x",
-  ylab = "y",
-  main = "Least squares and Bayes fits",
-  bty = "l",
-  pch = 20
-)
-abline(coef(fit)[1], coef(fit)[2], col = "black")
-text(-1.6,-.7, "Least-squares\nfit", cex = .9)
-abline(0, 1, col = "blue", lty = 2)
-text(-1, -1.8, "(Prior regression line)", col = "blue", cex = .9)
-abline(coef(fit_bayes)[1], coef(fit_bayes)[2], col = "blue")
-text(1.4, 1.2, "Posterior mean fit", col = "blue", cex = .9)
-points(
-  x,
-  coef(fit_bayes)[1] + coef(fit_bayes)[2] * x,
-  pch = 20,
-  col = "blue"
-)
-dev.off()
-
-## I used color-hex.com
-
-pdf("fig/rsquared1b.pdf", height=4, width=5)
-par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
-plot(
-  x, y,
-  ylim = range(x),
-  xlab = "x",
-  ylab = "y",
-  bty = "l",
-  pch = 20,
-  main = "Bayes posterior simulations"
-)
-for (s in 1:nrow(samp_20_draws)) {
-  abline(samp_20_draws[s, 1], samp_20_draws[s, 2], col = "#9497eb")
-}
-abline(
-  coef(fit_bayes)[1],
-  coef(fit_bayes)[2],
-  col = "#1c35c4",
-  lwd = 2
-)
-points(x, y, pch = 20, col = "black")
-dev.off()
-
 
