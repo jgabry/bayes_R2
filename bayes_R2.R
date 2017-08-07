@@ -1,6 +1,8 @@
-library(rstanarm)
-library(ggplot2)
-library(bayesplot)
+# File contents: 
+#   * bayes_R2 function
+#   * code for fitting the models for the example in the paper
+#   * code for producing the plots in the paper (both base graphics and ggplot2 code)
+
 
 # Compute Bayesian R-squared for stan_glm models. 
 # 
@@ -12,8 +14,8 @@ library(bayesplot)
 #      the number of posterior draws.
 #
 bayes_R2 <- function(fit) {
-  y <- get_y(fit)
-  ypred <- posterior_linpred(fit, transform = TRUE)
+  y <- rstanarm::get_y(fit)
+  ypred <- rstanarm::posterior_linpred(fit, transform = TRUE)
   if (family(fit)$family == "binomial" && NCOL(y) == 2) {
     trials <- rowSums(y)
     y <- y[, 1]
@@ -27,6 +29,8 @@ bayes_R2 <- function(fit) {
 
 
 # Example -----------------------------------------------------------------
+
+library("rstanarm")
 
 x <- 1:5 - 3
 y <- c(1.7, 2.6, 2.5, 4.4, 3.8) - 3
@@ -118,7 +122,12 @@ points(x, y, pch = 20, col = "black")
 dev.off()
 
 
+
 # ggplot version
+
+library("ggplot2")
+library("bayesplot")
+
 theme_set(bayesplot::theme_default(base_family = "sans"))
 theme_update(
   plot.title = element_text(face = "bold", hjust = 0.5), 
