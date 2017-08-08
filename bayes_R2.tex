@@ -52,7 +52,7 @@
   \and Jonah Gabry$^\ddagger$
   \and Imad Ali\footnote{Department of Statistics, Columbia University.
 }\vspace{.1in}}
-\date{7 August 2017\vspace{-.1in}}
+\date{8 August 2017\vspace{-.1in}}
 \begin{document}\sloppy
 \maketitle
 \thispagestyle{empty}
@@ -95,12 +95,12 @@ Here we consider how to extend the concept of $R^2$ to apply to Bayesian model
 fitting.  Our motivation is the {\tt rstanarm} R package
 \citep{rstanarmRpackage} for fitting applied regression models using Stan
 \citep{stan}. {\tt rstanarm} contains a set of wrapper functions that enable the
-user to express regression models with traditional R syntax \citep{rcore}
----for example, $\mathtt{y \sim x1 + x2 + x3}$---
-and then fit these models using Bayesian inference, allowing the incorporation
+user to express regression models with traditional R syntax \citep{rcore}, 
+for example, $\mathtt{y \sim x1 + x2 + x3}$, and then fit these models using 
+Bayesian inference, allowing the incorporation
 of prior information in the input stage and yielding posterior simulations and
-predictions in the output.  After fitting a model using the \verb#stan_glm()#
-or \verb#stan_glmer()# function, we would like to display an estimate of $R^2$
+predictions in the output.  After fitting a model using the \verb#stan_glm#
+or \verb#stan_glmer# function, we would like to display an estimate of $R^2$
 along with the estimated coefficients and standard errors.
 
 \section{Defining $R^2$ based on the variance of estimated prediction errors}
@@ -117,7 +117,7 @@ no requirement that this be the case, and it would be awkward to say that a
 fitted model explains more than 100\% of the variance.
 
 \begin{figure}
-\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b.pdf}}
+\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b-gg.pdf}}
 \vspace{-.1in}
 \caption{\em Simple example showing the challenge of defining $R^2$ for a fitted
 Bayesian model.  {\em Left plot:}  data, least-squares regression line, and
@@ -255,7 +255,7 @@ sense for linear models with equal variance, but given that we can essentially
 compute $R^2$ for free, we might as well do so.  An alternative is to summarize
 residual error on the log-probability scale, in which case we recommend using
 approximate leave-one-out cross-validation \citep{VehtariGelmanGabry2017},
-which can be done using the {\tt loo()} function within {\tt rstanarm}.
+which can be done using the {\tt loo} function within {\tt rstanarm}.
 If desired, changes in expected log-probability scores can be converted back to
 an $R^2$ scale as discussed by \cite{Nagelkerke1991}.
 

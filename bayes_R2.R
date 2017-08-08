@@ -4,10 +4,13 @@
 #   * code for producing the plots in the paper (both base graphics and ggplot2 code)
 
 
-# Compute Bayesian R-squared for stan_glm models. 
-# 
-# A more complicated version of this function that is compatible with stan_glmer
-# models and specifying newdata will be available in the rstanarm package.
+# Compute Bayesian R-squared for stan_glm models
+#
+# NOTE: If you have a rstanarm v2.15.4 or higher then the bayes_R2
+# function is included ---see help("bayes_R2", "rstanarm")--- and
+# you do not need to use this simplified version here. The version
+# in the rstanarm package is also more compatible with stan_glmer
+# models than this version.
 #
 # @param fit A fitted model object returned by stan_glm.
 # @return A vector of R-squared values with length equal to
@@ -36,18 +39,18 @@ x <- 1:5 - 3
 y <- c(1.7, 2.6, 2.5, 4.4, 3.8) - 3
 xy <- data.frame(x,y)
 
-## Lsq fit
+## Least squares fit
 fit <- lm(y ~ x, data = xy)
 ols_coef <- coef(fit)
 
 yhat <- ols_coef[1] + ols_coef[2] * x
 r <- y - yhat
-rsq_1 <- var(yhat)/(var(y))
-rsq_2 <- var(yhat)/(var(yhat) + var(r))
+rsq_1 <- var(yhat) / (var(y))
+rsq_2 <- var(yhat) / (var(yhat) + var(r))
 
 print(c(rsq_1, rsq_2))
 
-## Bayes fit
+## Bayes fit with strong priors
 fit_bayes <- stan_glm(
   y ~ x,
   data = xy,
@@ -57,7 +60,8 @@ fit_bayes <- stan_glm(
 posterior <- as.matrix(fit_bayes, pars = c("(Intercept)", "x"))
 post_means <- colMeans(posterior)
 
-print(median(bayes_R2(fit_bayes)))
+rsq_bayes <- bayes_R2(fit_bayes)
+print(median(rsq_bayes))
 
 
 # Figures -----------------------------------------------------------------
@@ -65,7 +69,7 @@ print(median(bayes_R2(fit_bayes)))
 # The first section of code below creates plots using base R graphics. 
 # Below that there is code to produce the plots using ggplot2.
 
-# take a sample of 20 posterior draws
+# take a sample of 20 of the posterior draws
 keep <- sample(nrow(posterior), 20)
 samp_20_draws <- posterior[keep, ]
 
