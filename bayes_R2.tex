@@ -190,11 +190,11 @@ package and a few additional lines of code:
 \begin{verbatim}
 bayes_R2 <- function(fit) {
   y <- get_y(fit)
-  ypred <- posterior_linpred(fit)
-  e <- -1 * sweep(ypred, 2, y)
-  var_ypred <- apply(ypred, 1, var)
+  yhat <- posterior_linpred(fit)
+  e <- -1 * sweep(yhat, 2, y)
+  var_yhat <- apply(yhat, 1, var)
   var_e <- apply(e, 1, var)
-  var_ypred / (var_ypred + var_e)
+  var_yhat / (var_yhat + var_e)
 }
 ## Example
 M1 <- stan_glm(y ~ x)
@@ -209,6 +209,44 @@ if we were to replace the denominator of \eqref{rsq3} by $V_{n=1}^N \,y_n$, we
 would get a median $R^2$ of 1.44.  Also, in case it might be of interest, we
 report the posterior mean and standard deviation of $R^2$ in this example:
 they are 0.79 and 0.03.
+
+
+\section{Another perspective: conditional mean vs. posterior predictive distribution}
+In expectation \eqref{rsq3} is equivalent to 
+\begin{equation}\label{rsq4}
+\mbox{Bayesian } R^2_s = 
+	\frac{\sum_{n=1}^N (\hat{y}_n^s)^2}{\sum_{n=1}^N (\tilde{y}_n^s)^2},
+\end{equation}
+%
+where $\tilde{y}$ is distributed according to the posterior predictive distribution 
+$p(\tilde{y} | y, x) = \int p(\tilde{y} | \theta) p(\theta | y, x) d\theta$. That is, we can 
+think of the Bayesian $R^2$ as a comparison of the posterior distribution of the 
+conditional mean and the posterior predictive distribution of the outcome. 
+Each Bayesian $R^2_s$ is the ratio of the sum of squares of a 
+posterior draw of the conditional mean to the sum of squares of a draw from the posterior 
+predictive distribution. Using {\tt rstanarm} naming conventions this corresponds to 
+%
+\begin{equation*}
+\mbox{Bayesian } R^2_s = 
+	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s,n]^2}}{\sum_{n=1}^N {\tt posterior\_predict(fit)[s,n]^2}}.
+\end{equation*}
+%
+In fact, to calculate the entire $S$-vector of $R^2$ values for a linear regression only requires a single 
+line of R code:
+%
+\vspace{-\baselineskip}
+\begin{quotation}
+\noindent
+\begin{small}
+\begin{verbatim}
+rsq <- rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
+\end{verbatim}
+\end{small}
+\end{quotation}
+%
+Unfortunately, although equal in expectation to \eqref{rsq3}, in practice this method can result
+in $R^2$ values greater than 1 and so we prefer to carry out the computations using \eqref{rsq3}. 
+
 
 \section{Models with group-specific terms}
 The {\tt rstanarm} package also provides the \verb#stan_glmer# function for
@@ -308,16 +346,16 @@ have a number of trials greater than 1.
 #
 bayes_R2 <- function(fit) {
   y <- get_y(fit)
-  ypred <- posterior_linpred(fit, transform = TRUE)
+  yhat <- posterior_linpred(fit, transform = TRUE)
   if (family(fit)$family == "binomial" && NCOL(y) == 2) {
     trials <- rowSums(y)
     y <- y[, 1]
-    ypred <- ypred %*% diag(trials)
+    yhat <- yhat %*% diag(trials)
   }
-  e <- -1 * sweep(ypred, 2, y)
-  var_ypred <- apply(ypred, 1, var)
+  e <- -1 * sweep(yhat, 2, y)
+  var_yhat <- apply(yhat, 1, var)
   var_e <- apply(e, 1, var)
-  var_ypred / (var_ypred + var_e)
+  var_yhat / (var_yhat + var_e)
 }
 \end{verbatim}
 \end{small}
