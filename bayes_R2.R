@@ -45,29 +45,36 @@ ols_coef <- coef(fit)
 
 yhat <- ols_coef[1] + ols_coef[2] * x
 r <- y - yhat
-rsq_1 <- var(yhat) / (var(y))
-rsq_2 <- var(yhat) / (var(yhat) + var(r))
+rsq_classic <- var(yhat) / (var(y))
+rsq_alt <- var(yhat) / (var(yhat) + var(r))
 
-print(c(rsq_1, rsq_2))
+print(c(rsq_classic, rsq_alt))
 
 ## Bayes fit with strong priors
 fit_bayes <- stan_glm(
   y ~ x,
   data = xy,
   prior_intercept = normal(0, 0.2, autoscale = FALSE),
-  prior = normal(1, 0.2, autoscale = FALSE)
+  prior = normal(1, 0.2, autoscale = FALSE), 
+  prior_aux = NULL
 )
-posterior <- as.matrix(fit_bayes, pars = c("(Intercept)", "x"))
-post_means <- colMeans(posterior)
-
 rsq_bayes <- bayes_R2(fit_bayes)
 print(median(rsq_bayes))
+
+rsq_bayes_alt <- 
+  rowSums(posterior_linpred(fit_bayes)^2) / 
+  rowSums(posterior_predict(fit_bayes)^2)
+print(median(rsq_bayes_alt))
+
 
 
 # Figures -----------------------------------------------------------------
 
 # The first section of code below creates plots using base R graphics. 
 # Below that there is code to produce the plots using ggplot2.
+
+posterior <- as.matrix(fit_bayes, pars = c("(Intercept)", "x"))
+post_means <- colMeans(posterior)
 
 # take a sample of 20 of the posterior draws
 keep <- sample(nrow(posterior), 20)
@@ -202,4 +209,6 @@ fig_1b <-
 
 plot(fig_1b)
 ggsave("fig/rsquared1b-gg.pdf", width = 5, height = 4)
+
+
 

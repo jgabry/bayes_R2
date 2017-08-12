@@ -136,7 +136,8 @@ $y = \alpha + \beta x+\mbox{error}$
 with a strong prior on $(\alpha,\beta)$ and only a few data points.
 Figure~\ref{rsquared1}a shows data and the least-squares regression line (with
 $R^2$ of 0.77).  We then do a Bayes fit with informative priors
-$\alpha \sim \mbox{N}(0,0.2^2)$ and $\beta \sim \mbox{N}(1,0.2^2)$.
+$\alpha \sim \mbox{N}(0,0.2^2)$ and $\beta \sim \mbox{N}(1,0.2^2)$, and 
+a flat prior on the error standard deviation $\sigma$. 
 The standard deviation of the fitted values from the Bayes model is 1.3, while
 the standard deviation of the data is only 1.08, so the square of this
 ratio---$R^2$ as defined in \eqref{rsq1}---is greater than 1.
@@ -179,6 +180,44 @@ We can then summarize this by its posterior median, for example. It would also
 be possible to obtain an estimate of the posterior uncertainty in $R^2$,
 although it is not clear that this would be of much interest.
 
+In expectation \eqref{rsq3} is equivalent to the ratio of sums of squares
+%
+\begin{equation}\label{rsq4}
+\mbox{alternative Bayesian } R^2_s = 
+	 \frac{\sum_{n=1}^N (\hat{y}_n^s)^2}{\sum_{n=1}^N (\tilde{y}_n^s)^2},
+\end{equation}
+%
+where $\tilde{y}$ is distributed according to the posterior predictive distribution. 
+When computed in this way, each Bayesian $R^2_s$ is the ratio of the sum of 
+squares of a posterior draw of the conditional mean to the sum of squares of a 
+draw from the posterior predictive distribution. Using {\tt rstanarm} naming 
+conventions this corresponds to 
+%
+\begin{equation*}
+\mbox{alternative Bayesian } R^2_s = 
+	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s,n]^2}}{\sum_{n=1}^N{\tt posterior\_predict(fit)[s,n]^2}}.
+\end{equation*}
+%
+In fact, to calculate the entire $S$-vector of $R^2$ values for a linear regression would 
+only require a single line of R code:
+%
+\vspace{-\baselineskip}
+\begin{quotation}
+\noindent
+\begin{small}
+\begin{verbatim}
+rsq <- rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
+\end{verbatim}
+\end{small}
+\end{quotation}
+%
+However, although equal in expectation to \eqref{rsq3}, in practice the denominator 
+can be smaller than the numerator due to Monte Carlo variation and we can obtain  
+$R^2$ values greater than 1. Rarely would $R^2$ be large enough in practical 
+applications for Monte Carlo variation to produce a ratio greater than 1, but we
+prefer to carry out the computations using the \eqref{rsq3} to avoid the 
+possibility entirely. 
+
 For a linear regression model we can compute the Bayesian $R^2$ defined in
 \eqref{rsq3} using the \verb#posterior_linpred# function in the {\tt rstanarm}
 package and a few additional lines of code:
@@ -196,6 +235,7 @@ bayes_R2 <- function(fit) {
   var_e <- apply(e, 1, var)
   var_yhat / (var_yhat + var_e)
 }
+
 ## Example
 M1 <- stan_glm(y ~ x)
 print(median(bayes_R2(M1)))
@@ -211,41 +251,6 @@ report the posterior mean and standard deviation of $R^2$ in this example:
 they are 0.79 and 0.03.
 
 
-\section{Another perspective: conditional mean vs. posterior predictive distribution}
-In expectation \eqref{rsq3} is equivalent to 
-\begin{equation}\label{rsq4}
-\mbox{Bayesian } R^2_s = 
-	\frac{\sum_{n=1}^N (\hat{y}_n^s)^2}{\sum_{n=1}^N (\tilde{y}_n^s)^2},
-\end{equation}
-%
-where $\tilde{y}$ is distributed according to the posterior predictive distribution 
-$p(\tilde{y} | y, x) = \int p(\tilde{y} | \theta) p(\theta | y, x) d\theta$. That is, we can 
-think of the Bayesian $R^2$ as a comparison of the posterior distribution of the 
-conditional mean and the posterior predictive distribution of the outcome. 
-Each Bayesian $R^2_s$ is the ratio of the sum of squares of a 
-posterior draw of the conditional mean to the sum of squares of a draw from the posterior 
-predictive distribution. Using {\tt rstanarm} naming conventions this corresponds to 
-%
-\begin{equation*}
-\mbox{Bayesian } R^2_s = 
-	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s,n]^2}}{\sum_{n=1}^N {\tt posterior\_predict(fit)[s,n]^2}}.
-\end{equation*}
-%
-In fact, to calculate the entire $S$-vector of $R^2$ values for a linear regression only requires a single 
-line of R code:
-%
-\vspace{-\baselineskip}
-\begin{quotation}
-\noindent
-\begin{small}
-\begin{verbatim}
-rsq <- rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
-\end{verbatim}
-\end{small}
-\end{quotation}
-%
-Unfortunately, although equal in expectation to \eqref{rsq3}, in practice this method can result
-in $R^2$ values greater than 1 and so we prefer to carry out the computations using \eqref{rsq3}. 
 
 
 \section{Models with group-specific terms}
