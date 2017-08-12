@@ -128,20 +128,20 @@ usual definition of $R^2$ will not work.  {\em Right plot:}  posterior mean
 fitted regression line along with 20 draws of the line from the posterior
 distribution.  To define a Bayesian $R^2$ we compute equation
 \eqref{rsq3} for each posterior simulation draw and then take the median.}
-\label{rsquared1}
+\label{fig1}
 \end{figure}
 
 To see an example where the simple $R^2$ would be inappropriate, consider a model
 $y = \alpha + \beta x+\mbox{error}$
 with a strong prior on $(\alpha,\beta)$ and only a few data points.
-Figure~\ref{rsquared1}a shows data and the least-squares regression line (with
+Figure~\ref{fig1}a shows data and the least-squares regression line (with
 $R^2$ of 0.77).  We then do a Bayes fit with informative priors
 $\alpha \sim \mbox{N}(0,0.2^2)$ and $\beta \sim \mbox{N}(1,0.2^2)$, and 
 a flat prior on the error standard deviation $\sigma$. 
 The standard deviation of the fitted values from the Bayes model is 1.3, while
 the standard deviation of the data is only 1.08, so the square of this
 ratio---$R^2$ as defined in \eqref{rsq1}---is greater than 1.
-Figure~\ref{rsquared1}b shows the posterior mean fitted regression line along
+Figure~\ref{fig1}b shows the posterior mean fitted regression line along
 with 20 draws of the line $y = \alpha + \beta x$ from the fitted posterior
 distribution of $(\alpha,\beta)$.\footnote{Code for this example is available at
 \url{https://github.com/jgabry/bayes_R2}.}
@@ -195,7 +195,7 @@ conventions this corresponds to
 %
 \begin{equation*}
 \mbox{alternative Bayesian } R^2_s = 
-	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s,n]^2}}{\sum_{n=1}^N{\tt posterior\_predict(fit)[s,n]^2}}.
+	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s, n]^2}}{\sum_{n=1}^N{\tt posterior\_predict(fit)[s, n]^2}}.
 \end{equation*}
 %
 In fact, to calculate the entire $S$-vector of $R^2$ values for a linear regression would 
@@ -243,14 +243,27 @@ print(median(bayes_R2(M1)))
 \end{small}
 \end{quotation}
 %
-For the example in Figure~\ref{rsquared1}, the median $R^2$ from
-equation \eqref{rsq3}, as calculated by the above code, is 0.80.  In comparison,
-if we were to replace the denominator of \eqref{rsq3} by $V_{n=1}^N \,y_n$, we
-would get a median $R^2$ of 1.44.  Also, in case it might be of interest, we
-report the posterior mean and standard deviation of $R^2$ in this example:
-they are 0.79 and 0.03.
+For the example in Figure~\ref{fig1}, the median $R^2$ from
+equation \eqref{rsq3}, as calculated by the above code, is 0.80.  
+Also, in case it might be of interest, we report the posterior mean and 
+standard deviation of $R^2$ in this example: they are 0.79 and 0.03.
+In comparison, if we were to replace the denominator of 
+\eqref{rsq3} by $V_{n=1}^N \,y_n$, we would get a median $R^2$ of 1.44. 
+If we were to use the alternative Bayesian $R^2$ as defined in \eqref{rsq4}
+we would get a lower median (0.75) but, as shown in Figure~\ref{fig2}, 
+we also get many individual draws much greater than 1.
 
-
+\begin{figure}
+\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared2a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared2b-gg.pdf}}
+\vspace{-.1in}
+\caption{\em 
+Comparison of Bayesian $R^2$ approaches. The vertical blue lines are drawn at median values. 
+{\em Left plot:} Bayesian $R^2$ computed using \eqref{rsq3} . 
+{\em Right plot:}  Alternative Bayesian $R^2$ computed using equation \eqref{rsq4}. 
+The red line is drawn at 1.
+}
+\label{fig2}
+\end{figure}
 
 
 \section{Models with group-specific terms}

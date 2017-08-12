@@ -70,8 +70,8 @@ print(median(rsq_bayes_alt))
 
 # Figures -----------------------------------------------------------------
 
-# The first section of code below creates plots using base R graphics. 
-# Below that there is code to produce the plots using ggplot2.
+# The first section of code below creates plots using ggplot2.
+# Below that there is code using base R graphics. 
 
 posterior <- as.matrix(fit_bayes, pars = c("(Intercept)", "x"))
 post_means <- colMeans(posterior)
@@ -80,61 +80,8 @@ post_means <- colMeans(posterior)
 keep <- sample(nrow(posterior), 20)
 samp_20_draws <- posterior[keep, ]
 
-# base graphics version
 
-pdf("fig/rsquared1a.pdf", height=4, width=5)
-par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
-plot(
-  x, y,
-  ylim = range(x),
-  xlab = "x",
-  ylab = "y",
-  main = "Least squares and Bayes fits",
-  bty = "l",
-  pch = 20
-)
-abline(coef(fit)[1], coef(fit)[2], col = "black")
-text(-1.6,-.7, "Least-squares\nfit", cex = .9)
-abline(0, 1, col = "blue", lty = 2)
-text(-1, -1.8, "(Prior regression line)", col = "blue", cex = .9)
-abline(coef(fit_bayes)[1], coef(fit_bayes)[2], col = "blue")
-text(1.4, 1.2, "Posterior mean fit", col = "blue", cex = .9)
-points(
-  x,
-  coef(fit_bayes)[1] + coef(fit_bayes)[2] * x,
-  pch = 20,
-  col = "blue"
-)
-dev.off()
-
-## I used color-hex.com
-
-pdf("fig/rsquared1b.pdf", height=4, width=5)
-par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
-plot(
-  x, y,
-  ylim = range(x),
-  xlab = "x",
-  ylab = "y",
-  bty = "l",
-  pch = 20,
-  main = "Bayes posterior simulations"
-)
-for (s in 1:nrow(samp_20_draws)) {
-  abline(samp_20_draws[s, 1], samp_20_draws[s, 2], col = "#9497eb")
-}
-abline(
-  coef(fit_bayes)[1],
-  coef(fit_bayes)[2],
-  col = "#1c35c4",
-  lwd = 2
-)
-points(x, y, pch = 20, col = "black")
-dev.off()
-
-
-
-# ggplot version
+# ggplot versions
 
 library("ggplot2")
 library("bayesplot")
@@ -212,3 +159,107 @@ ggsave("fig/rsquared1b-gg.pdf", width = 5, height = 4)
 
 
 
+# compare the two bayesian R squared approaches
+theme_update(
+  axis.line.y = element_blank(), 
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank()
+)
+
+fig_2a <- 
+  ggplot(data.frame(x = rsq_bayes), aes(x)) + 
+  geom_histogram(
+    size = 0.2, 
+    binwidth = 0.004, 
+    color = "white", 
+    fill = "gray50"
+  ) + 
+  vline_at(median(rsq_bayes), color = "blue", size = 1) + 
+  scale_y_continuous(expand = c(0.01, 0)) + 
+  labs(
+    x = expression(R^2), 
+    y = NULL, 
+    title = expression(paste("Alternative Bayesian ", R^2))
+  )
+
+plot(fig_2a)
+ggsave("fig/rsquared2a-gg.pdf", width = 5, height = 4)
+
+
+fig_2b <- 
+  ggplot(data.frame(x = rsq_bayes_alt), aes(x)) + 
+  geom_histogram(
+    size = 0.2, 
+    binwidth = 0.075, 
+    color = "white", 
+    fill = "gray50"
+  ) + 
+  vline_at(
+    c(median(rsq_bayes_alt), 1), 
+    color = c("blue", "red"), 
+    linetype = c(1, 1), 
+    size = c(1, 0.5)
+  ) + 
+  scale_y_continuous(expand = c(0.01, 0)) + 
+  labs(
+    x = expression(R^2), 
+    y = NULL, 
+    title = expression(paste("Alternative Bayesian ", R^2))
+  )
+
+plot(fig_2b)
+ggsave("fig/rsquared2b-gg.pdf", width = 5, height = 4)
+
+
+
+# base graphics version of figure 1a and 1b
+
+pdf("fig/rsquared1a.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  main = "Least squares and Bayes fits",
+  bty = "l",
+  pch = 20
+)
+abline(coef(fit)[1], coef(fit)[2], col = "black")
+text(-1.6,-.7, "Least-squares\nfit", cex = .9)
+abline(0, 1, col = "blue", lty = 2)
+text(-1, -1.8, "(Prior regression line)", col = "blue", cex = .9)
+abline(coef(fit_bayes)[1], coef(fit_bayes)[2], col = "blue")
+text(1.4, 1.2, "Posterior mean fit", col = "blue", cex = .9)
+points(
+  x,
+  coef(fit_bayes)[1] + coef(fit_bayes)[2] * x,
+  pch = 20,
+  col = "blue"
+)
+dev.off()
+
+## I used color-hex.com
+
+pdf("fig/rsquared1b.pdf", height=4, width=5)
+par(mar=c(3,3,1,1), mgp=c(1.7,.5,0), tck=-.01)
+plot(
+  x, y,
+  ylim = range(x),
+  xlab = "x",
+  ylab = "y",
+  bty = "l",
+  pch = 20,
+  main = "Bayes posterior simulations"
+)
+for (s in 1:nrow(samp_20_draws)) {
+  abline(samp_20_draws[s, 1], samp_20_draws[s, 2], col = "#9497eb")
+}
+abline(
+  coef(fit_bayes)[1],
+  coef(fit_bayes)[2],
+  col = "#1c35c4",
+  lwd = 2
+)
+points(x, y, pch = 20, col = "black")
+dev.off()
