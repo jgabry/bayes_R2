@@ -44,15 +44,15 @@
 
 \title{\bf R-squared for Bayesian regression models\footnote{
   We thank Frank Harrell and Aki Vehtari for helpful comments and the National Science Foundation,
-  Office of Naval Research, Institute for Education Sciences, and Sloan Foundation
-  for partial support of this work.
+  Office of Naval Research, Defense Advanced Research Projects Agency, Institute for Education Sciences, 
+  and Sloan Foundation for partial support of this work.
 }\vspace{.1in}}
 \author{Andrew Gelman\footnote{Department of Statistics and Department of Political Science, Columbia University.}
   \and Ben Goodrich\footnote{Institute for Social and Economic Research and Policy, Columbia University.}
   \and Jonah Gabry$^\ddagger$
-  \and Imad Ali\footnote{Department of Statistics, Columbia University.
+  \and Imad Ali\footnote{National Basketball Association and Department of Statistics, Columbia University.
 }\vspace{.1in}}
-\date{8 August 2017\vspace{-.1in}}
+\date{8 November 2017\vspace{-.1in}}
 \begin{document}\sloppy
 \maketitle
 \thispagestyle{empty}
@@ -97,8 +97,8 @@ fitting.  Our motivation is the {\tt rstanarm} R package
 \citep{stan}. {\tt rstanarm} contains a set of wrapper functions that enable the
 user to express regression models with traditional R syntax \citep{rcore}, 
 for example, $\mathtt{y \sim x1 + x2 + x3}$, and then fit these models using 
-Bayesian inference, allowing the incorporation
-of prior information in the input stage and yielding posterior simulations and
+Bayesian inference, allowing the incorporation of prior information in the 
+input stage and yielding posterior simulations and
 predictions in the output.  After fitting a model using the \verb#stan_glm#
 or \verb#stan_glmer# function, we would like to display an estimate of $R^2$
 along with the estimated coefficients and standard errors.
@@ -198,15 +198,15 @@ conventions this corresponds to
 	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s, n]^2}}{\sum_{n=1}^N{\tt posterior\_predict(fit)[s, n]^2}}.
 \end{equation*}
 %
-In fact, to calculate the entire $S$-vector of $R^2$ values for a linear regression would 
-only require a single line of R code:
+in the case of a linear model. In fact, to calculate the entire $S$-vector of $R^2$ values for a linear 
+regression would only require a single line of R code:
 %
 \vspace{-\baselineskip}
 \begin{quotation}
 \noindent
 \begin{small}
 \begin{verbatim}
-rsq <- rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
+rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
 \end{verbatim}
 \end{small}
 \end{quotation}
@@ -237,7 +237,7 @@ bayes_R2 <- function(fit) {
 }
 
 ## Example
-M1 <- stan_glm(y ~ x)
+M1 <- stan_glm(y ~ x, data = data.frame(y, x))
 print(median(bayes_R2(M1)))
 \end{verbatim}
 \end{small}
@@ -256,11 +256,11 @@ we also get many individual draws much greater than 1.
 \begin{figure}
 \centerline{\includegraphics[width=.5\textwidth]{fig/rsquared2a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared2b-gg.pdf}}
 \vspace{-.1in}
-\caption{\em 
-Comparison of Bayesian $R^2$ approaches. The vertical blue lines are drawn at median values. 
+\caption{\it 
+Comparison of Bayesian $R^2$ approaches. 
 {\em Left plot:} Bayesian $R^2$ computed using \eqref{rsq3} . 
 {\em Right plot:}  Alternative Bayesian $R^2$ computed using equation \eqref{rsq4}. 
-The red line is drawn at 1.
+The vertical blue lines are drawn at the median values and the red line is drawn at the value 1.
 }
 \label{fig2}
 \end{figure}
@@ -283,12 +283,12 @@ factor into the computation of $\hat{y}$ and thus $R^2$.
 \section{Discussion}
 $R^2$ has well-known problems as a measure of model fit, but it can be a handy
 quick summary for linear regressions and generalized linear models (see, for
-example, \cite{HuPaltaShao2006}) and we would like to produce it by default
-when fitting Bayesian regressions.  Our preferred solution is to use the
-posterior median of the ratio \eqref{rsq3}:  predicted variance divided by
+example, \cite{HuPaltaShao2006}) and we would like a method that allows us 
+to produce it by default when fitting Bayesian regressions.  Our preferred solution 
+is to use the posterior median of the ratio \eqref{rsq3}:  predicted variance divided by
 predicted variance plus error variance.
 
-A new issue then arises, though, when fitting a set of a models to a single
+A new issue then emerges, though, when fitting a set of a models to a single
 dataset.  Now that the denominator of $R^2$ is no longer fixed, we can no longer
 interpret an increase in $R^2$ as a improved fit to a fixed target.  We think
 this particular loss of interpretation is necessary:  from a Bayesian
@@ -315,14 +315,14 @@ which can be done using the {\tt loo} function within {\tt rstanarm}.
 If desired, changes in expected log-probability scores can be converted back to
 an $R^2$ scale as discussed by \cite{Nagelkerke1991}.
 
-One issue that arises when using $R^2$ to evaluate and compare models is
+Another issue that arises when using $R^2$ to evaluate and compare models is
 overfitting.  As with other measures of predictive model fit, overfitting should
 be less of an issue with Bayesian inference because averaging over the posterior
 distribution is more conservative than taking a least-squares or maximum
 likelihood fit, but predictive accuracy for new data will still on average be
 lower, in expectation, than for the data used to fit the model
-\citep{GelmanHwangVehtari2014}. We will include a {\tt newdata} argument in the
-\verb#bayes_R2# function  that can be used in the case that new or held-out data
+\citep{GelmanHwangVehtari2014}. The \verb#bayes_R2# function also takes a 
+{\tt newdata} argument in the that can be used in the case that new or held-out data
 are actually available, but otherwise to correct for that bias one might want to
 replace $V_{n=1}^N \,e_n^s$ in the denominator of \eqref{rsq3} by its expectation
 for new data, or more generally one could construct an overfitting-corrected
