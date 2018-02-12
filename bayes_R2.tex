@@ -1,14 +1,15 @@
 \documentclass[11pt]{article}
+ \pdfminorversion=4
 \usepackage[utf8]{inputenc}
 \usepackage{amsfonts,epsfig}
 \usepackage[hyphens]{url}
-\usepackage{hyperref}
+%\usepackage{hyperref}
 \usepackage{breakurl}
 \usepackage{comment}
 
 \usepackage{natbib}
 
-\linespread{1.02}
+\linespread{1.25}
 
 \usepackage{relsize}
 \usepackage{fancyvrb}
@@ -43,16 +44,16 @@
 
 
 \title{\bf R-squared for Bayesian regression models\footnote{
-  We thank Frank Harrell and Aki Vehtari for helpful comments and the National Science Foundation,
-  Office of Naval Research, Defense Advanced Research Projects Agency, Institute for Education Sciences, 
-  and Sloan Foundation for partial support of this work.
+  We thank Frank Harrell for helpful comments and the National Science Foundation,
+  Office of Naval Research, Institute for Education Sciences, Defense Advanced Research Projects Agency, and Sloan Foundation
+  for partial support of this work.
 }\vspace{.1in}}
 \author{Andrew Gelman\footnote{Department of Statistics and Department of Political Science, Columbia University.}
   \and Ben Goodrich\footnote{Institute for Social and Economic Research and Policy, Columbia University.}
   \and Jonah Gabry$^\ddagger$
-  \and Imad Ali\footnote{National Basketball Association and Department of Statistics, Columbia University.
+  \and Imad Ali\footnote{Department of Statistics, Columbia University.
 }\vspace{.1in}}
-\date{8 November 2017\vspace{-.1in}}
+\date{11 Feb 2017\vspace{-.1in}}
 \begin{document}\sloppy
 \maketitle
 \thispagestyle{empty}
@@ -63,7 +64,7 @@ variance of the data) has a problem for Bayesian fits, as the numerator can be
 larger than the denominator.  We propose an alternative definition similar to
 one that has appeared in the survival analysis literature:  the variance of the
 predicted values divided by the variance of predicted values plus the variance 
-of the errors. Our plan is for this to be printed automatically for linear and
+of the errors. This summary is computed automatically for linear and
 generalized linear regression models fit using {\tt rstanarm}, our R package
 for fitting Bayesian applied regression models with Stan.
 \end{abstract}
@@ -72,12 +73,12 @@ for fitting Bayesian applied regression models with Stan.
 
 Consider a regression model of outcomes $y$ and predictors $X$ with predicted
 values $\mbox{E}(y|X,\theta)$, fit to data $(X,y)_n, \, n=1,\ldots,N$.  Ordinary
-least squares regression yields an estimated parameter vector $\hat{\theta}$
+least squares yields an estimated parameter vector $\hat{\theta}$
 with predicted values $\hat{y}_n = \mbox{E}(y | X_n, \hat{\theta})$ and residual
 variance $V_{n=1}^N \,\hat{y}_n$, where we are using the notation,
 %
 $$
-V_{n=1}^N \, z_n = \frac{1}{n-1}\sum_{n=1}^N (z_n - \bar{z})^2, \mbox{ for any vector }z.
+V_{n=1}^N \, z_n = \frac{1}{N-1}\sum_{n=1}^N (z_n - \bar{z})^2, \mbox{ for any vector }z.
 $$
 %
 The proportion of variance explained,
@@ -95,29 +96,29 @@ Here we consider how to extend the concept of $R^2$ to apply to Bayesian model
 fitting.  Our motivation is the {\tt rstanarm} R package
 \citep{rstanarmRpackage} for fitting applied regression models using Stan
 \citep{stan}. {\tt rstanarm} contains a set of wrapper functions that enable the
-user to express regression models with traditional R syntax \citep{rcore}, 
-for example, $\mathtt{y \sim x1 + x2 + x3}$, and then fit these models using 
-Bayesian inference, allowing the incorporation of prior information in the 
-input stage and yielding posterior simulations and
-predictions in the output.  After fitting a model using the \verb#stan_glm#
-or \verb#stan_glmer# function, we would like to display an estimate of $R^2$
+user to express regression models with traditional R syntax \citep{rcore}, for example, $\mathtt{y \sim x1 + x2 + x3}$, and then fit these models using Bayesian inference, allowing the incorporation
+of prior information in the input stage and yielding posterior simulations and
+predictions in the output.  After fitting a model using \verb#stan_glm#
+or \verb#stan_glmer#, the user can display an estimate of $R^2$
 along with the estimated coefficients and standard errors.
+
+Two challenges arise in defining $R^2$ for a Bayesian regression model.  The first is the desire to reflect posterior uncertainty:  the overfitting problem of classical point estimates (which motivates the existence of various adjusted $R^2$ formulas) should not be a problem with Bayesian inference.  Second, in the presence of strong prior information and weak data, it is possible for fitted variance, $V_{n=1}^N \,\hat{y}_n$  to be higher than total variance, $V_{n=1}^N \,y_n$, so that the classical formula (\ref{rsq1}) can yield an $R^2$ greater than 1.  In the present paper we propose a generalization that reduces to classical $R^2$ for least squares inference, to adjusted $R^2$ for Bayesian inference with flat prior, and in general has a Bayesian interpretation as a decomposition of variance.
 
 \section{Defining $R^2$ based on the variance of estimated prediction errors}
 
-Our first thought for Bayesian $R^2$ is to simply use the posterior mean
+Our first thought for Bayesian $R^2$ is simply to use the posterior mean
 estimate of $\theta$ to create Bayesian predictions $\hat{y}_n$ and then plug
 these into the classical formula \eqref{rsq1}.  This has two problems:  first,
 it is dismisses uncertainty to use a point estimate in Bayesian computation;
 and, second, the ratio as thus defined can be greater than 1.  When
 $\hat{\theta}$ is estimated using ordinary least squares, and assuming the
 regression model includes a constant term, the numerator of \eqref{rsq1} is less
-than or equal to the denominator by definition; more generally, though, there is
+than or equal to the denominator by definition; for general estimates, though, there is
 no requirement that this be the case, and it would be awkward to say that a
 fitted model explains more than 100\% of the variance.
 
 \begin{figure}
-\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b-gg.pdf}}
+\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared1a.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared1b.pdf}}
 \vspace{-.1in}
 \caption{\em Simple example showing the challenge of defining $R^2$ for a fitted
 Bayesian model.  {\em Left plot:}  data, least-squares regression line, and
@@ -128,34 +129,33 @@ usual definition of $R^2$ will not work.  {\em Right plot:}  posterior mean
 fitted regression line along with 20 draws of the line from the posterior
 distribution.  To define a Bayesian $R^2$ we compute equation
 \eqref{rsq3} for each posterior simulation draw and then take the median.}
-\label{fig1}
+\label{rsquared1}
 \end{figure}
 
-To see an example where the simple $R^2$ would be inappropriate, consider a model
+To see an example where the simple $R^2$ would be inappropriate, consider the model
 $y = \alpha + \beta x+\mbox{error}$
 with a strong prior on $(\alpha,\beta)$ and only a few data points.
-Figure~\ref{fig1}a shows data and the least-squares regression line (with
-$R^2$ of 0.77).  We then do a Bayes fit with informative priors
-$\alpha \sim \mbox{N}(0,0.2^2)$ and $\beta \sim \mbox{N}(1,0.2^2)$, and 
-a flat prior on the error standard deviation $\sigma$. 
+Figure~\ref{rsquared1}a shows data and the least-squares regression line, with
+$R^2$ of 0.77.  We then do a Bayes fit with informative priors
+$\alpha \sim \mbox{N}(0,0.2^2)$ and $\beta \sim \mbox{N}(1,0.2^2)$.
 The standard deviation of the fitted values from the Bayes model is 1.3, while
 the standard deviation of the data is only 1.08, so the square of this
 ratio---$R^2$ as defined in \eqref{rsq1}---is greater than 1.
-Figure~\ref{fig1}b shows the posterior mean fitted regression line along
+Figure~\ref{rsquared1}b shows the posterior mean fitted regression line along
 with 20 draws of the line $y = \alpha + \beta x$ from the fitted posterior
 distribution of $(\alpha,\beta)$.\footnote{Code for this example is available at
 \url{https://github.com/jgabry/bayes_R2}.}
 
-Instead of working with \eqref{rsq1} directly, we generalize a different formula
-for explained variance:
+Instead of working with \eqref{rsq1} directly, we use a variance decomposition for the denominator:
 %
 \begin{equation}\label{rsq2}
-\mbox{alternative } R^2 = 
+\mbox{alternative } R^2 = \frac{\mbox{Explained variance}}{\mbox{Explained variance} + \mbox{Residual variance}} =
 	\frac{V_{n=1}^N \,\hat{y}_n}{V_{n=1}^N \,\hat{y}_n  + V_{n=1}^N \,r_n},
 \end{equation}
 %
 where $r_n = y_n - \hat{y}_n$ are the residuals of the fitted model.
-The advantage of \eqref{rsq2} is that it is always between $0$ and $1$ by
+For least squares regression, (\ref{rsq2}) reduces to (\ref{rsq1}):  the two expressions only differ in their denominator, and with least squares the vector of residuals $r$ is exactly linearly independent of the vector of predicted values $\hat{y}$ by construction, hence $V_{n=1}^N \, (\hat{y}_n+r_n) \equiv V_{n=1}^N \,\hat{y}_n  + V_{n=1}^N \,r_n$.
+More generally, the advantage of \eqref{rsq2} is that it is always between $0$ and $1$ by
 construction, no matter what procedure is used to construct the estimate
 $\hat{y}$.
 
@@ -176,95 +176,24 @@ $e_n^s = y_n - \hat{y}_n^s$, and thus the proportion of variance explained,
 	\frac{V_{n=1}^N \,\hat{y}_n^s}{V_{n=1}^N \,\hat{y}_n^s  + V_{n=1}^N \,e_n^s}.
 \end{equation}
 %
-We can then summarize this by its posterior median, for example. It would also
-be possible to obtain an estimate of the posterior uncertainty in $R^2$,
-although it is not clear that this would be of much interest.
-
-In expectation \eqref{rsq3} is equivalent to the ratio of sums of squares
-%
+We could then summarize this by its posterior mean or median, for example.  As a point estimate, though, we prefer to use a ratio of expected variances:
 \begin{equation}\label{rsq4}
-\mbox{alternative Bayesian } R^2_s = 
-	 \frac{\sum_{n=1}^N (\hat{y}_n^s)^2}{\sum_{n=1}^N (\tilde{y}_n^s)^2},
+\mbox{estimated Bayesian } R^2 =
+\frac{\frac{1}{S}\sum_{s=1}^S\left(V_{n=1}^N \,\hat{y}_n^s\right)}{\frac{1}{S}\sum_{s=1}^S\left(V_{n=1}^N \,\hat{y}_n^s  + V_{n=1}^N \,e_n^s\right)},
 \end{equation}
-%
-where $\tilde{y}$ is distributed according to the posterior predictive distribution. 
-When computed in this way, each Bayesian $R^2_s$ is the ratio of the sum of 
-squares of a posterior draw of the conditional mean to the sum of squares of a 
-draw from the posterior predictive distribution. Using {\tt rstanarm} naming 
-conventions this corresponds to 
-%
-\begin{equation*}
-\mbox{alternative Bayesian } R^2_s = 
-	\frac{\sum_{n=1}^N {\tt posterior\_linpred(fit)[s, n]^2}}{\sum_{n=1}^N{\tt posterior\_predict(fit)[s, n]^2}}.
-\end{equation*}
-%
-in the case of a linear model. In fact, to calculate the entire $S$-vector of $R^2$ values for a linear 
-regression would only require a single line of R code:
-%
-\vspace{-\baselineskip}
-\begin{quotation}
-\noindent
-\begin{small}
-\begin{verbatim}
-rowSums(posterior_linpred(fit)^2) / rowSums(posterior_predict(fit)^2)
-\end{verbatim}
-\end{small}
-\end{quotation}
-%
-However, although equal in expectation to \eqref{rsq3}, in practice the denominator 
-can be smaller than the numerator due to Monte Carlo variation and we can obtain  
-$R^2$ values greater than 1. Rarely would $R^2$ be large enough in practical 
-applications for Monte Carlo variation to produce a ratio greater than 1, but we
-prefer to carry out the computations using the \eqref{rsq3} to avoid the 
-possibility entirely. 
+because in this case we can give clear interpretations to both the numerator and the denominator, and we are interested in $R^2$ as a property of the entire fitted model.
 
-For a linear regression model we can compute the Bayesian $R^2$ defined in
-\eqref{rsq3} using the \verb#posterior_linpred# function in the {\tt rstanarm}
-package and a few additional lines of code:
-%
-\vspace{-\baselineskip}
-\begin{quotation}
-\noindent
-\begin{small}
-\begin{verbatim}
-bayes_R2 <- function(fit) {
-  y <- get_y(fit)
-  yhat <- posterior_linpred(fit)
-  e <- -1 * sweep(yhat, 2, y)
-  var_yhat <- apply(yhat, 1, var)
-  var_e <- apply(e, 1, var)
-  var_yhat / (var_yhat + var_e)
-}
+%An alternative to \eqref{rsq3} is the ratio of sums of squares, $\sum_{n=1}^N (\hat{y}_n^s)^2\big/\sum_{n=1}^N (\tilde{y}_n^s)^2$, where $\tilde{y}$ is distributed according to the posterior predictive distribution.  When computed in this way, each Bayesian $R^2_s$ is the ratio of the sum of squares of a posterior draw of the conditional mean to the sum of squares of a draw from the posterior predictive distribution. However, although equal asymptotically to \eqref{rsq3}, in practice the denominator of this new expression can be smaller than the numerator due to Monte Carlo variation and so the resulting ratio can be greater than 1, which seems contrary to the goal of $R^2$ to partition variance in the data.
 
-## Example
-M1 <- stan_glm(y ~ x, data = data.frame(y, x))
-print(median(bayes_R2(M1)))
-\end{verbatim}
-\end{small}
-\end{quotation}
-%
-For the example in Figure~\ref{fig1}, the median $R^2$ from
-equation \eqref{rsq3}, as calculated by the above code, is 0.80.  
-Also, in case it might be of interest, we report the posterior mean and 
-standard deviation of $R^2$ in this example: they are 0.79 and 0.03.
-In comparison, if we were to replace the denominator of 
-\eqref{rsq3} by $V_{n=1}^N \,y_n$, we would get a median $R^2$ of 1.44. 
-If we were to use the alternative Bayesian $R^2$ as defined in \eqref{rsq4}
-we would get a lower median (0.75) but, as shown in Figure~\ref{fig2}, 
-we also get many individual draws much greater than 1.
 
-\begin{figure}
-\centerline{\includegraphics[width=.5\textwidth]{fig/rsquared2a-gg.pdf}\includegraphics[width=.5\textwidth]{fig/rsquared2b-gg.pdf}}
-\vspace{-.1in}
-\caption{\it 
-Comparison of Bayesian $R^2$ approaches. 
-{\em Left plot:} Bayesian $R^2$ computed using \eqref{rsq3} . 
-{\em Right plot:}  Alternative Bayesian $R^2$ computed using equation \eqref{rsq4}. 
-The vertical blue lines are drawn at the median values and the red line is drawn at the value 1.
-}
-\label{fig2}
-\end{figure}
-
+For a linear regression model we can compute these using the \verb#posterior_linpred# function in the {\tt rstanarm}
+package and a few additional lines of code, as shown in the Appendix.
+For the example in Figure~\ref{rsquared1}, the estimated $R^2$ from
+equation \eqref{rsq4}, as calculated by the above code, is 0.80.
+% In comparison, if we were to replace the denominator of \eqref{rsq3} by $V_{n=1}^N \,y_n$, we would get a median $R^2$ of 1.44. 
+Also, in case it might be of interest, we
+report the posterior mean and standard deviation of $R^2_s$ in this example:
+they are 0.79 and 0.03.
 
 \section{Models with group-specific terms}
 The {\tt rstanarm} package also provides the \verb#stan_glmer# function for
@@ -272,28 +201,29 @@ fitting models with group-specific coefficients that have unknown covariance
 matrices. The linear predictor for these models is often written as
 $X \beta + Zb$, following the parameterization used by the \verb#glmer#
 function in the {\tt lme4} package \citep{lme4Rpackage}. In the classical
-formulation $Zb$ can be considered as part of the model's error term rather than
+formulation, $Zb$ can be considered as part of the model's error term rather than
 the conditional mean of the outcome, but from a Bayesian perspective we
 condition on $Z$ when fitting the model and it makes sense by default to include
-the $Zb$ term when computing $\hat{y}$. However, the \verb#bayes_R2# function in
+the $Zb$ term when computing $\hat{y}$. The \verb#bayes_R2# function in
 {\tt rstanarm} provides a {\tt re.form} argument that allows the user to
 override this default and specify which, if any, of the group-level terms should
 factor into the computation of $\hat{y}$ and thus $R^2$.
 
+{\em ADD AN EXAMPLE HERE \dots}
+
 \section{Discussion}
 $R^2$ has well-known problems as a measure of model fit, but it can be a handy
 quick summary for linear regressions and generalized linear models (see, for
-example, \cite{HuPaltaShao2006}) and we would like a method that allows us 
-to produce it by default when fitting Bayesian regressions.  Our preferred solution 
-is to use the posterior median of the ratio \eqref{rsq3}:  predicted variance divided by
-predicted variance plus error variance.
+example, \cite{HuPaltaShao2006}) and we would like to produce it by default
+when fitting Bayesian regressions.  Our preferred solution is to use \eqref{rsq4}:  expected predicted variance divided by
+expected predicted variance plus error variance.
 
-A new issue then emerges, though, when fitting a set of a models to a single
+A new issue then arises, though, when fitting a set of a models to a single
 dataset.  Now that the denominator of $R^2$ is no longer fixed, we can no longer
 interpret an increase in $R^2$ as a improved fit to a fixed target.  We think
 this particular loss of interpretation is necessary:  from a Bayesian
 perspective, a concept such as ``explained variance'' can ultimately only be
-interpreted in the context of a model.  The denominator of \eqref{rsq3} can be
+interpreted in the context of a model.  The denominator of \eqref{rsq4} can be
 interpreted as an estimate of the expected variance of predicted future data
 from the model under the assumption that the predictors $X$ are held fixed;
 alternatively the predictors can be taken as random, as suggested by
@@ -301,9 +231,9 @@ alternatively the predictors can be taken as random, as suggested by
 Bayesian $R^2$ as a data-based estimate of the proportion of variance explained
 for new data. If the goal is to see continual progress of the fit to existing
 data, one can simply track the decline in the estimated error variance,
-$V_{n=1}^N \,e_n^s$.
+$\frac{1}{S}\sum_{s=1}^S \left(V_{n=1}^N \,e_n^s\right)$.
 
-Moving forward, we plan to implement our Bayesian $R^2$ by default in
+We have implemented our Bayesian $R^2$ by default in
 {\tt rstanarm}, not just for linear regression but also for generalized linear
 models; see the appendix for a generalized version of the
 \verb#bayes_R2# function. The concept of ``explained variance'' makes most
@@ -321,10 +251,10 @@ be less of an issue with Bayesian inference because averaging over the posterior
 distribution is more conservative than taking a least-squares or maximum
 likelihood fit, but predictive accuracy for new data will still on average be
 lower, in expectation, than for the data used to fit the model
-\citep{GelmanHwangVehtari2014}. The \verb#bayes_R2# function also takes a 
-{\tt newdata} argument in the that can be used in the case that new or held-out data
+\citep{GelmanHwangVehtari2014}. The \verb#bayes_R2# function
+also takes a  {\tt newdata} argument that can be used in the case that new or held-out data
 are actually available, but otherwise to correct for that bias one might want to
-replace $V_{n=1}^N \,e_n^s$ in the denominator of \eqref{rsq3} by its expectation
+replace $V_{n=1}^N \,e_n^s$ in the denominator of \eqref{rsq3} and \eqref{rsq4} by its expectation
 for new data, or more generally one could construct an overfitting-corrected
 $R^2$ in the same way that is done for log-score measures via cross-validation.
 In the present paper we are trying to stay close to the sprit of the original
@@ -343,11 +273,10 @@ $R^2$ in quantifying the model's fit to the data at hand.
 
 This modified version of the \verb#bayes_R2# function works with
 Bayesian linear and generalized linear models fit using the
-\verb#stan_glm# function in the {\tt rstanarm} package. The only
-differences compared to the function presented in the body of the paper are
-the requirement of specifying \verb#transform=TRUE# in the call to
+\verb#stan_glm# function in the {\tt rstanarm} package. This code
+specifies \verb#transform=TRUE# in the call to
 \verb#posterior_linpred# (to apply the inverse-link function to the linear
-predictor) and a few lines to account for the binomial models that
+predictor) and also includes a few lines to account for the binomial models that
 have a number of trials greater than 1.
 %
 \vspace{-\baselineskip}
@@ -364,16 +293,18 @@ have a number of trials greater than 1.
 #
 bayes_R2 <- function(fit) {
   y <- get_y(fit)
-  yhat <- posterior_linpred(fit, transform = TRUE)
+  ypred <- posterior_linpred(fit, transform = TRUE)
   if (family(fit)$family == "binomial" && NCOL(y) == 2) {
     trials <- rowSums(y)
     y <- y[, 1]
-    yhat <- yhat %*% diag(trials)
+    ypred <- ypred %*% diag(trials)
   }
-  e <- -1 * sweep(yhat, 2, y)
-  var_yhat <- apply(yhat, 1, var)
+  e <- -1 * sweep(ypred, 2, y)
+  var_ypred <- apply(ypred, 1, var)
   var_e <- apply(e, 1, var)
-  var_yhat / (var_yhat + var_e)
+  R2_sims <- var_ypred / (var_ypred + var_e)
+  R2_estimate <- mean(var_ypred) / maen(var_ypred + var_e)
+  return(sims=R2_sims, estimate=R2_estimate)
 }
 \end{verbatim}
 \end{small}
@@ -384,5 +315,8 @@ is more complicated than the function presented here in order to
 accommodate models fit using \verb#stan_glmer# and various special cases.
 The full source code is available in the {\tt rstanarm} GitHub repository
 (\url{http://github.com/stan-dev/rstanarm}).
+
+{\bf Also include code showing examples of its use}
+
 
 \end{document}
