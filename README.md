@@ -1,10 +1,8 @@
-This repository contains materials for the paper 
-_R-squared for Bayesian regression models_ 
-by Andrew Gelman, Ben Goodrich, Jonah Gabry, and Imad Ali.
+# R-squared for Bayesian Regression Models
 
-### Repository contents: 
+This repository conntains materials for the paper
 
-* The `bayes_R2.tex` file has the paper, `bayes_R2.bib` has the references, and the
-`fig/` directory has the figures used in the `bayes_R2.tex` file.
-* The `bayes_R2.R` file contains the code for the example in the paper, including
-the code to produce the plots in the `fig/` directory. 
+Andrew Gelman, Ben Goodrich, Jonah Gabry & Aki Vehtari (2019)    
+R-squared for Bayesian Regression Models,     
+*The American Statistician*,     
+73:3, 307-309, DOI: 10.1080/00031305.2018.1549100
